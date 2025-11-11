@@ -1,0 +1,12 @@
+# UV files
+uv.lock
+.venv/
+pyproject.toml
+
+# Python
+__pycache__/
+*.pyc
+.env
+
+# Streamlit
+.streamlit/secrets.toml
