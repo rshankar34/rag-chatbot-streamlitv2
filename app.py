@@ -183,6 +183,17 @@ with st.sidebar:
         st.session_state.messages = []
         st.success("Cleared!")
         st.rerun()
+    
+    st.divider()
+    
+    # Subtle GitHub link
+    st.markdown(
+        "<div style='text-align: center; opacity: 0.6;'>"
+        "<a href='https://github.com/rshankar34/rag-chatbot-streamlitv2' "
+        "style='text-decoration: none; color: inherit; font-size: 0.8em;'>"
+        "View source code on GitHub</a></div>",
+        unsafe_allow_html=True
+    )
 
 # Chat
 st.subheader("💬 Chat")
