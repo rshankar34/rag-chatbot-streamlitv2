@@ -1,205 +1,225 @@
-```markdown
 # ☁️ RAG PDF Chatbot
 
-A Retrieval-Augmented Generation (RAG) chatbot to upload PDF documents, ask questions about their contents, and receive AI-powered answers with cited sources—built with Streamlit, LangChain, OpenAI GPT-4o-mini, FAISS, and AWS.
+A Retrieval-Augmented Generation (RAG) chatbot that lets you upload PDF documents and ask questions about them using AI. Built with Streamlit, LangChain, OpenAI GPT-4o-mini, and AWS.
 
----
+## 🎯 Features
 
-## 🚀 Features
-
-- **Multi-PDF Upload**: Upload and process multiple PDFs.
-- **Semantic Search**: Contextual lookup using FAISS vector DB.
-- **AI Q&A**: Leverages GPT-4o-mini for contextual question answering.
-- **Persistent Chat History**: Session chat is stored in DynamoDB.
-- **Cloud Native**: AWS S3 for storage, Streamlit UI.
-
----
+- 📤 Upload multiple PDFs to AWS S3
+- 🔍 Semantic search with FAISS vector database
+- 🤖 AI-powered Q&A using GPT-4o-mini
+- 💾 Chat history stored in DynamoDB
+- 🎨 Clean Streamlit interface
 
 ## 🛠️ Tech Stack
 
-| Component      | Technology           |
-| -------------- | ------------------- |
-| Frontend       | Streamlit           |
-| LLM            | OpenAI GPT-4o-mini  |
-| Vector DB      | FAISS + SentenceTransformers |
-| Storage        | AWS S3              |
-| Database       | AWS DynamoDB        |
-| Framework      | LangChain           |
-| Language       | Python 3.11+        |
+- **Frontend**: Streamlit
+- **LLM**: OpenAI GPT-4o-mini
+- **Vector DB**: FAISS + Sentence Transformers
+- **Storage**: AWS S3
+- **Database**: AWS DynamoDB
+- **Framework**: LangChain
 
----
+***
 
-## 📦 Quickstart
+## 🚀 Quick Setup
 
 ### Prerequisites
 
 - Python 3.11+
-- AWS account with S3 & DynamoDB (free tier is sufficient)
+- AWS Account (free tier works)
 - OpenAI API key
 
-### 1. Clone and Install
+### 1. Clone & Install
 
-```
-git clone <your-repo-url>
+```bash
+git clone <repo-url>
 cd rag-chatbot-streamlit
 pip install -r requirements.txt
 ```
 
----
+### 2. Configure AWS
 
-### 2. AWS Setup
+#### Create S3 Bucket
+1. AWS Console → S3 → **Create bucket**
+2. Name: `rag-chatbot-pdfs-yourname`
+3. Region: `eu-north-1` (or your choice)
+4. Keep **"Block all public access"** enabled
 
-#### S3 Bucket
+#### Create DynamoDB Table
+1. AWS Console → DynamoDB → **Create table**
+2. Table name: `ChatHistory`
+3. **Partition key**: `session_id` (String)
+4. **Sort key**: `timestamp` (Number)
+5. Table settings: **On-demand**
 
-- Name: `rag-chatbot-pdfs-yourname`
-- Region: `eu-north-1` (or your preferred region)
-- Block all public access
+#### Create IAM User
+1. AWS Console → IAM → Users → **Create user**
+2. Username: `rag-chatbot-user`
+3. Attach policies:
+   - `AmazonS3FullAccess`
+   - `AmazonDynamoDBFullAccess`
+4. Create **Access Key** → Save the credentials
 
-#### DynamoDB Table
+### 3. Get OpenAI API Key
 
-- Name: `ChatHistory`
-- Partition key: `session_id` (String)
-- Sort key: `timestamp` (Number)
-- Billing: On-demand
+1. Go to [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+2. Create new secret key
+3. Copy and save it (starts with `sk-proj-...`)
 
-#### IAM User
+### 4. Create Secrets File
 
-- Create an IAM user for programmatic access.
-- Attach: `AmazonS3FullAccess`, `AmazonDynamoDBFullAccess`.
-- Save Access Key ID and Secret.
+Create `.streamlit/secrets.toml`:
 
----
-
-### 3. OpenAI API Key
-
-- Get your key at [OpenAI API Keys](https://platform.openai.com/api-keys).
-
----
-
-### 4. Create `.streamlit/secrets.toml`
-
-Create `.streamlit/secrets.toml` in your repo root:
-
+```bash
+mkdir .streamlit
+touch .streamlit/secrets.toml  # Mac/Linux
+# OR
+type nul > .streamlit\secrets.toml  # Windows
 ```
-# OpenAI
-OPENAI_API_KEY = "sk-proj-...your-openai-key..."
 
-# AWS
+Edit `.streamlit/secrets.toml`:
+
+```toml
+# OpenAI
+OPENAI_API_KEY = "sk-proj-your-actual-openai-api-key"
+
+# AWS Credentials
 AWS_ACCESS_KEY_ID = "AKIA..."
-AWS_SECRET_ACCESS_KEY = "your-secret-aws-key"
+AWS_SECRET_ACCESS_KEY = "your-secret-key"
 AWS_REGION = "eu-north-1"
 
-# S3
+# S3 Bucket
 S3_BUCKET_NAME = "rag-chatbot-pdfs-yourname"
 ```
 
-**Never commit `secrets.toml` to your repository!** (It's in `.gitignore`.)
-
----
+⚠️ **IMPORTANT**: Never commit this file to Git! It's already in `.gitignore`.
 
 ### 5. Run Locally
 
-```
+```bash
 streamlit run app.py
 ```
-Go to http://localhost:8501.
 
----
+Visit `http://localhost:8501`
 
-## ☁️ Streamlit Cloud Deployment
+***
 
-1. **Push to GitHub:**
-    ```
-    git add .
-    git commit -m "Initial commit"
-    git push
-    ```
-2. **Deploy:**
-    - Go to [Streamlit Community Cloud](https://share.streamlit.io/)
-    - "New app" → select repo → file: `app.py`
-3. **Add Secrets:**
-    - In **Advanced settings > Secrets**, paste the full content of `.streamlit/secrets.toml`.
-4. **Deploy and open your app!**
+## ☁️ Deploy to Streamlit Cloud
 
----
+### 1. Push to GitHub
+
+```bash
+git add .
+git commit -m "Initial commit"
+git push origin main
+```
+
+### 2. Deploy
+
+1. Go to [share.streamlit.io](https://share.streamlit.io/)
+2. Click **"New app"**
+3. Select your repository
+4. Main file: `app.py`
+
+### 3. Add Secrets
+
+In **Advanced settings** → **Secrets**, paste:
+
+```toml
+OPENAI_API_KEY = "sk-proj-..."
+AWS_ACCESS_KEY_ID = "AKIA..."
+AWS_SECRET_ACCESS_KEY = "..."
+AWS_REGION = "eu-north-1"
+S3_BUCKET_NAME = "rag-chatbot-pdfs-yourname"
+```
+
+### 4. Deploy
+
+Click **Deploy** and wait 3-5 minutes.
+
+***
 
 ## 💡 Usage
 
-- **Upload PDFs**: Use the sidebar file uploader.
-- **Process**: Click "Upload & Process" to embed new PDFs.
-- **Chat**: Type and send questions about your documents.
-- **Get Sources**: Answers include document citations.
-- **Show S3 PDFs / Clear Chat**: Use sidebar controls for file management and session cleanup.
+1. **Upload PDFs**: Use sidebar file uploader
+2. **Process**: Click "Upload & Process" button
+3. **Ask Questions**: Type in chat input
+4. **Get Answers**: AI responds with sources cited
 
----
+***
 
-## 🐛 Troubleshooting
-
-- **DynamoDB error:** Check table name, partition/sort keys, and region.
-- **S3 error:** Check bucket name/region and AWS credentials.
-- **OpenAI authentication:** Verify your key in `secrets.toml`.
-- **Dependency errors:** Use the exact `requirements.txt` provided.
-
-For debugging, add this snippet in the sidebar to check installed versions:
-
-```
-import importlib.metadata
-st.sidebar.write(f"openai: {importlib.metadata.version('openai')}")
-st.sidebar.write(f"langchain: {importlib.metadata.version('langchain')}")
-```
-Expected output:
-```
-openai: 1.6.1
-langchain: 0.1.0
-```
-
----
-
-## 📂 Project Layout
+## 📂 Project Structure
 
 ```
 rag-chatbot-streamlit/
-├── app.py
-├── aws_utils.py
-├── requirements.txt
+├── app.py                 # Main application
+├── aws_utils.py          # AWS S3 & DynamoDB utilities
+├── requirements.txt      # Python dependencies
 ├── .streamlit/
-│   ├── config.toml
-│   ├── runtime.txt
-│   └── secrets.toml (never commit!)
+│   ├── config.toml      # UI settings
+│   ├── runtime.txt      # Python 3.11
+│   └── secrets.toml     # Credentials (not in Git!)
 ├── .gitignore
 └── README.md
 ```
 
----
+***
 
-## 🔒 Security Checklist
+## 🐛 Troubleshooting
 
-- No secrets or API keys will ever be committed to Git.
-- IAM user has minimum required permissions.
-- S3 bucket is not public.
-- Chat history only—no sensitive data—goes into DynamoDB.
+### DynamoDB Error: "ResourceNotFoundException"
+- Check table name is exactly `ChatHistory`
+- Verify region in secrets matches AWS Console
+- Confirm table has `session_id` (String) and `timestamp` (Number)
 
----
+### S3 Error: "AccessDenied"
+- Verify bucket name matches secrets.toml
+- Check IAM user has S3 permissions
+- Confirm bucket exists in correct region
+
+### OpenAI Error: "AuthenticationError"
+- Verify API key is correct
+- Check you have credits at [platform.openai.com/usage](https://platform.openai.com/usage)
+
+### Secrets Not Found
+```bash
+# Verify file exists
+ls -la .streamlit/secrets.toml
+
+# Create if missing
+mkdir .streamlit
+touch .streamlit/secrets.toml
+```
+
+***
 
 ## 📊 Cost Estimate
 
-| Service        | Typical Monthly Cost  |
-| -------------- | -------------------- |
-| OpenAI         | $1–5 (light usage)   |
-| S3             | <$1                  |
-| DynamoDB       | Free in free tier    |
-| Streamlit Cloud| Free                 |
-| **Total**      | $1–6/month           |
+- **OpenAI**: ~$1-5/month (light usage)
+- **AWS S3**: ~$0.01-0.50/month
+- **AWS DynamoDB**: Free tier covers typical usage
+- **Streamlit Cloud**: Free
 
----
+**Total**: ~$1-6/month
+
+***
+
+## 🔒 Security
+
+- ✅ Secrets in `.gitignore` (never commit!)
+- ✅ Use IAM least-privilege policies
+- ✅ Keep S3 bucket private (block public access)
+- ✅ Rotate AWS keys every 90 days
+
+***
 
 ## 📄 License
 
-MIT License – see the [LICENSE](LICENSE) file.
+MIT License - see [LICENSE](LICENSE) file.
 
----
+***
 
-## 🙏 Acknowledgments
+## 🙏 Built With
 
 - [Streamlit](https://streamlit.io/)
 - [LangChain](https://langchain.com/)
@@ -207,11 +227,8 @@ MIT License – see the [LICENSE](LICENSE) file.
 - [FAISS](https://github.com/facebookresearch/faiss)
 - [AWS](https://aws.amazon.com/)
 
----
+***
 
 **Questions?** Open an issue on GitHub.
 
----
-
-_Made with ❤️ using Streamlit + AWS_
-```
+**Made with ❤️ using Streamlit + AWS**
